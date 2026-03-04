@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frog Official Website</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <style>
+        /* Fond d'écran typique de l'époque */
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: radial-gradient(circle at center, #3d7fb4 0%, #002d5a 100%);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* La Fenêtre Aero Glass */
+        .aero-window {
+            width: 85%;
+            max-width: 900px;
+            height: 80vh;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 8px 8px 5px 5px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 0 2px white;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Barre de titre brillante */
+        .title-bar {
+            height: 32px;
+            background: linear-gradient(to bottom, 
+                rgba(255,255,255,0.4) 0%, 
+                rgba(255,255,255,0.1) 50%, 
+                rgba(0,0,0,0.05) 51%, 
+                rgba(255,255,255,0.1) 100%);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.2);
+        }
+
+        .title-text {
+            color: white;
+            font-size: 13px;
+            text-shadow: 0 0 8px rgba(255,255,255,0.8), 0 0 3px black;
+            flex-grow: 1;
+        }
+
+        /* Boutons de fenêtre (Fermer, Réduire) */
+        .controls {
+            display: flex;
+            gap: 5px;
+        }
+        .btn {
+            width: 28px;
+            height: 18px;
+            border-radius: 2px;
+            border: 1px solid rgba(0,0,0,0.3);
+            background: linear-gradient(to bottom, #f0f0f0, #ccc);
+        }
+        .btn-close { background: linear-gradient(to bottom, #e87b7b, #b90000); }
+
+        /* Contenu blanc à l'intérieur */
+        .content-area {
+            background: white;
+            margin: 5px;
+            flex-grow: 1;
+            border: 1px solid #718ca1;
+            padding: 40px;
+            overflow-y: auto;
+            color: #333;
+            border-radius: 2px;
+        }
+
+        h1 {
+            color: #1e395b;
+            font-size: 24px;
+            border-bottom: 2px solid #3d7fb4;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        /* Rendu Markdown */
+        #md-render b, #md-render strong { color: #000; font-weight: bold; }
+        #md-render a { color: #0066cc; text-decoration: none; border-bottom: 1px dashed; }
+        #md-render a:hover { color: #ff6600; }
+
+        /* Notification Toast */
+        #toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="aero-window">
+        <div class="title-bar">
+            <div class="title-text">Welcome to our Official Frog Website</div>
+            <div class="controls">
+                <div class="btn"></div>
+                <div class="btn"></div>
+                <div class="btn btn-close"></div>
+            </div>
+        </div>
+        <div class="content-area">
+            <h1>Welcome!</h1>
+            <div id="md-render">Fetching data from GitHub...</div>
+        </div>
+    </div>
+
+    <div id="toast">Link copied to clipboard!</div>
+
+    <script>
+        const SPECIAL_URL = "https://frogsquadprecombat.aternos.me";
+        const MD_SOURCE = "https://raw.githubusercontent.com/TheFrogenSource/About-us/refs/heads/main/README.md";
+
+        async function loadMarkdown() {
+            try {
+                const response = await fetch(MD_SOURCE);
+                const text = await response.text();
+                const container = document.getElementById('md-render');
+                
+                // On utilise Marked pour le rendu
+                container.innerHTML = marked.parse(text);
+
+                // Traitement des liens
+                const links = container.querySelectorAll('a');
+                links.forEach(link => {
+                    const href = link.href.replace(/\/$/, ""); // Nettoie le "/" final
+                    
+                    if (href === SPECIAL_URL) {
+                        link.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            navigator.clipboard.writeText(SPECIAL_URL);
+                            showToast();
+                        });
+                    } else {
+                        link.target = "_blank";
+                        link.rel = "noopener noreferrer";
+                    }
+                });
+            } catch (e) {
+                document.getElementById('md-render').innerText = "Failed to load content.";
+            }
+        }
+
+        function showToast() {
+            const t = document.getElementById('toast');
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 2500);
+        }
+
+        loadMarkdown();
+    </script>
+</body>
+</html>
